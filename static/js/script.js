@@ -1,19 +1,8 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCnZq2VSUvTs5giEYy1UWccTYGxPpgrHaM",
-  authDomain: "foodtally-c2aa6.firebaseapp.com",
-  projectId: "foodtally-c2aa6",
-  storageBucket: "foodtally-c2aa6.firebasestorage.app",
-  messagingSenderId: "101610505032",
-  appId: "1:101610505032:web:736f310558da232ec5697d"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+const SUPABASE_URL = "https://ychlylmcitwgntesfwkg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_BBjtigJvI6h_ctEWFy1ZhQ_zjvJtNA4";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let itensDaFeira = [];
 let idEditando = null;
@@ -28,18 +17,20 @@ const nomeListaAtual = urlParams.get('nome');
 if (!listaIdAtual) window.location.href = "/dashboard"; 
 document.getElementById('titulo-lista').innerText = nomeListaAtual || "Lista de Compras";
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        usuarioAtual = user;
-        carregarListaEmTempoReal();
-    } else {
+async function verificarSessaoInterna() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
         window.location.href = "/";
+        return;
     }
-});
 
-// ==========================================
-// FUNÇÃO PARA MINIMIZAR/MAXIMIZAR O FORMULÁRIO
-// ==========================================
+    usuarioAtual = session.user;
+    carregarListaDoSupabase();
+}
+
+verificarSessaoInterna();
+
 window.toggleFormulario = function() {
     const form = document.getElementById('formulario');
     const btn = document.getElementById('btn-toggle-form');
@@ -53,17 +44,19 @@ window.toggleFormulario = function() {
     }
 }
 
-function carregarListaEmTempoReal() {
-    const itensRef = collection(db, "itens");
-    const q = query(itensRef, where("listaId", "==", listaIdAtual));
-    
-    onSnapshot(q, (snapshot) => {
-        itensDaFeira = [];
-        snapshot.forEach((documento) => {
-            itensDaFeira.push({ id: documento.id, ...documento.data() });
-        });
-        renderizarLista();
-    });
+async function carregarListaDoSupabase() {
+    const { data: itens, error } = await supabase
+        .from('itens')
+        .select('*')
+        .eq('lista_id', listaIdAtual);
+
+    if (error) {
+        console.error("Erro ao carregar itens:", error);
+        return;
+    }
+
+    itensDaFeira = itens || [];
+    renderizarLista();
 }
 
 window.salvarItem = async function() {
@@ -94,28 +87,27 @@ window.salvarItem = async function() {
     }
     
     const dadosItem = {
+        lista_id: listaIdAtual,
         nome: nome,
         categoria: categoria,
         tipo: tipo,
         qtd: qtd,
-        pesoEstimado: pesoEstimadoKg,
-        valorUnitario: valor,
+        peso_estimado: pesoEstimadoKg,
+        valor_unitario: valor,
         subtotal: subtotalCalculado,
-        status: status,
-        listaId: listaIdAtual
+        status: status
     };
 
     try {
         if (idEditando) {
-            await updateDoc(doc(db, "itens", idEditando), dadosItem);
+            await supabase.from('itens').update(dadosItem).eq('id', idEditando);
         } else {
-            await addDoc(collection(db, "itens"), dadosItem);
+            await supabase.from('itens').insert([dadosItem]);
         }
         limparFormulario();
-        
-        // Se o form estiver fechado ao salvar (ex: estava editando algo rápido), abre de novo
         document.getElementById('formulario').style.display = 'flex';
         document.getElementById('btn-toggle-form').innerText = 'Esconder Formulário';
+        carregarListaDoSupabase();
     } catch (erro) {
         console.error("Erro ao salvar:", erro);
     }
@@ -125,7 +117,6 @@ window.editarItem = function(id) {
     const item = itensDaFeira.find(i => i.id === id);
     if (!item) return;
 
-    // Abre o formulário automaticamente se estiver escondido para poder editar
     document.getElementById('formulario').style.display = 'flex';
     document.getElementById('btn-toggle-form').innerText = 'Esconder Formulário';
 
@@ -133,7 +124,7 @@ window.editarItem = function(id) {
     document.getElementById('categoria-item').value = item.categoria || "🛒 Mercearia";
     document.getElementById('tipo-unidade').value = item.tipo;
     document.getElementById('qtd-item').value = item.qtd !== 1 ? item.qtd : "";
-    document.getElementById('valor-item').value = item.status === 'comprado' ? item.valorUnitario : "";
+    document.getElementById('valor-item').value = item.status === 'comprado' ? item.valor_unitario : "";
 
     idEditando = id;
     
@@ -145,7 +136,8 @@ window.editarItem = function(id) {
 
 window.deletarItem = async function(id) {
     try {
-        await deleteDoc(doc(db, "itens", id));
+        await supabase.from('itens').delete().eq('id', id);
+        carregarListaDoSupabase();
     } catch (erro) {
         console.error("Erro ao deletar:", erro);
     }
@@ -156,7 +148,7 @@ function renderizarLista() {
     listaUl.innerHTML = "";
     let somaTotal = 0;
     const itensAgrupados = {};
-    const subtotaisCategoria = {}; // NOVO: Armazena o valor total gasto por categoria
+    const subtotaisCategoria = {}; 
 
     itensDaFeira.forEach(item => {
         const categoria = item.categoria || "🛒 Mercearia";
@@ -167,7 +159,6 @@ function renderizarLista() {
         }
         itensAgrupados[categoria].push(item);
         
-        // Se o item já foi comprado, soma no total geral e no subtotal da categoria
         if (item.status === 'comprado') {
             somaTotal += item.subtotal;
             subtotaisCategoria[categoria] += item.subtotal;
@@ -175,7 +166,6 @@ function renderizarLista() {
     });
 
     for (const [categoria, itens] of Object.entries(itensAgrupados)) {
-        // Título da categoria agora mostra o valor gasto ao lado
         const tituloLi = document.createElement('li');
         tituloLi.className = 'categoria-titulo';
         const valorCategoriaFomatado = subtotaisCategoria[categoria].toFixed(2);
@@ -203,14 +193,14 @@ function renderizarLista() {
                     </div>
                 `;
             } else {
-                let textoDetalhes = `${item.qtd}x de R$ ${item.valorUnitario.toFixed(2)}`;
+                let textoDetalhes = `${item.qtd}x de R$ ${item.valor_unitario.toFixed(2)}`;
                 let textoEstimado = "";
                 
                 if (item.tipo === 'kg') {
-                    textoDetalhes = `${item.qtd} kg a R$ ${item.valorUnitario.toFixed(2)}/kg`;
+                    textoDetalhes = `${item.qtd} kg a R$ ${item.valor_unitario.toFixed(2)}/kg`;
                 } else if (item.tipo === 'estimar_un') {
-                    let pesoExibicao = item.pesoEstimado ? item.pesoEstimado : 0;
-                    textoDetalhes = `${item.qtd} un (${pesoExibicao.toFixed(2)} kg) a R$ ${item.valorUnitario.toFixed(2)}/kg`;
+                    let pesoExibicao = item.peso_estimado ? item.peso_estimado : 0;
+                    textoDetalhes = `${item.qtd} un (${pesoExibicao.toFixed(2)} kg) a R$ ${item.valor_unitario.toFixed(2)}/kg`;
                     textoEstimado = `<br><small style="color: #eba417; font-size: 0.8rem;">(~ estimado)</small>`;
                 }
 
@@ -234,7 +224,6 @@ function renderizarLista() {
 
 function limparFormulario() {
     document.getElementById('nome-item').value = "";
-    // Reseta para Mercearia como padrão
     document.getElementById('categoria-item').value = "🛒 Mercearia";
     document.getElementById('tipo-unidade').value = "un";
     document.getElementById('qtd-item').value = "";

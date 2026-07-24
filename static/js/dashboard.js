@@ -1,31 +1,31 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs, updateDoc, arrayUnion, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCnZq2VSUvTs5giEYy1UWccTYGxPpgrHaM",
-  authDomain: "foodtally-c2aa6.firebaseapp.com",
-  projectId: "foodtally-c2aa6",
-  storageBucket: "foodtally-c2aa6.firebasestorage.app",
-  messagingSenderId: "101610505032",
-  appId: "1:101610505032:web:736f310558da232ec5697d"
-};
+const SUPABASE_URL = "https://ychlylmcitwgntesfwkg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_BBjtigJvI6h_ctEWFy1ZhQ_zjvJtNA4";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
 let usuarioAtual = null;
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        usuarioAtual = user;
-        carregarListas();
-    } else {
+// Verifica a sessão ativa no Supabase
+async function verificarSessao() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
         window.location.href = "/";
+        return;
     }
-});
 
-document.getElementById('btn-sair').addEventListener('click', () => signOut(auth));
+    usuarioAtual = session.user;
+    carregarListas();
+}
+
+verificarSessao();
+
+// Botão de Sair (Logout)
+document.getElementById('btn-sair').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+});
 
 function gerarCodigo() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -36,62 +36,85 @@ document.getElementById('btn-criar-lista').addEventListener('click', async () =>
     if (!nome) return alert("Digite um nome para a lista!");
 
     const codigo = gerarCodigo();
-    await addDoc(collection(db, "listas"), {
-        nome: nome,
-        codigoCompartilhamento: codigo,
-        criadorId: usuarioAtual.uid,
-        participantes: [usuarioAtual.uid]
-    });
-    document.getElementById('nome-nova-lista').value = "";
+    const { error } = await supabase.from('listas').insert([
+        { 
+            nome: nome, 
+            codigo_compartilhamento: codigo, 
+            criador_id: usuarioAtual.id, 
+            participantes: [usuarioAtual.id] 
+        }
+    ]);
+
+    if (error) {
+        console.error("Erro ao criar lista:", error);
+        alert("Erro ao criar lista.");
+    } else {
+        document.getElementById('nome-nova-lista').value = "";
+        carregarListas();
+    }
 });
 
 document.getElementById('btn-entrar-lista').addEventListener('click', async () => {
     const codigo = document.getElementById('codigo-convite').value.trim().toUpperCase();
     if (!codigo) return alert("Digite um código!");
 
-    const q = query(collection(db, "listas"), where("codigoCompartilhamento", "==", codigo));
-    const querySnapshot = await getDocs(q);
+    const { data: listas, error } = await supabase
+        .from('listas')
+        .select('*')
+        .eq('codigo_compartilhamento', codigo);
 
-    if (querySnapshot.empty) {
+    if (error || !listas || listas.length === 0) {
         alert("Código inválido ou lista não encontrada!");
         return;
     }
 
-    const docLista = querySnapshot.docs[0];
-    await updateDoc(doc(db, "listas", docLista.id), {
-        participantes: arrayUnion(usuarioAtual.uid)
-    });
-    
-    document.getElementById('codigo-convite').value = "";
-    alert("Você entrou na lista com sucesso!");
+    const lista = listas[0];
+    if (lista.participantes.includes(usuarioAtual.id)) {
+        alert("Você já faz parte desta lista!");
+        return;
+    }
+
+    const novosParticipantes = [...lista.participantes, usuarioAtual.id];
+
+    const { error: updateError } = await supabase
+        .from('listas')
+        .update({ participantes: novosParticipantes })
+        .eq('id', lista.id);
+
+    if (!updateError) {
+        document.getElementById('codigo-convite').value = "";
+        alert("Você entrou na lista com sucesso!");
+        carregarListas();
+    }
 });
 
-function carregarListas() {
-    const q = query(collection(db, "listas"), where("participantes", "array-contains", usuarioAtual.uid));
-    
-    onSnapshot(q, (snapshot) => {
-        const container = document.getElementById('container-listas');
-        container.innerHTML = "";
-        
-        if (snapshot.empty) {
-            container.innerHTML = "<p style='text-align:center; color:#888;'>Você ainda não tem listas.</p>";
-            return;
-        }
+async function carregarListas() {
+    const container = document.getElementById('container-listas');
+    container.innerHTML = "<p style='text-align:center; color:#888;'>Carregando...</p>";
 
-        snapshot.forEach((documento) => {
-            const lista = documento.data();
-            const div = document.createElement('div');
-            div.className = 'card-lista';
-            div.onclick = () => window.location.href = `/app?id=${documento.id}&nome=${encodeURIComponent(lista.nome)}`;
-            
-            div.innerHTML = `
-                <div>
-                    <h4 style="margin: 0; color: #fff; font-size: 1.2rem;">${lista.nome}</h4>
-                    <small style="color: #888;">Código Convite: <b style="color: #4CAF50;">${lista.codigoCompartilhamento}</b></small>
-                </div>
-                <span style="font-size: 1.5rem;">➔</span>
-            `;
-            container.appendChild(div);
-        });
+    const { data: listas, error } = await supabase
+        .from('listas')
+        .select('*')
+        .contains('participantes', [usuarioAtual.id]);
+
+    container.innerHTML = "";
+    if (error || !listas || listas.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#888;'>Você ainda não tem listas.</p>";
+        return;
+    }
+
+    listas.forEach((lista) => {
+        const div = document.createElement('div');
+        div.className = 'card-lista';
+        div.onclick = () => window.location.href = `/app?id=${lista.id}&nome=${encodeURIComponent(lista.nome)}`;
+        
+        div.innerHTML = `
+            <div>
+                <h4 style="margin: 0; color: #fff; font-size: 1.2rem;">${lista.nome}</h4>
+                <small style="color: #888;">Código Convite: <b style="color: #4CAF50;">${lista.codigo_compartilhamento}</b></small>
+            </div>
+            <span style="font-size: 1.5rem;">➔</span>
+        `;
+        container.appendChild(div);
     });
 }
