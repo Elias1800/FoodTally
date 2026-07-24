@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FoodTally - Minhas Listas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .dashboard-container { padding: 20px; max-width: 600px; margin: auto; }
+        .card-lista { background: var(--bg-card); padding: 20px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; transition: 0.2s; }
+        .card-lista:hover { border-color: var(--accent-color); }
+        .painel-acoes { background: var(--bg-card); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
+        .painel-acoes input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #444; background: var(--bg-body); color: white; font-size: 1rem; }
+        .btn-acao { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid #333;">
+        <h1 style="font-size: 1.5rem; margin: 0;">🛒 Suas Listas</h1>
+        <button id="btn-sair" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Sair</button>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="painel-acoes">
+            <h3 style="margin-top:0; color: var(--accent-color);">Criar Nova Lista</h3>
+            <input type="text" id="nome-nova-lista" placeholder="Ex: Churrasco de Domingo">
+            <button id="btn-criar-lista" class="btn-acao" style="background: var(--accent-color); color: #000;">+ Criar Lista</button>
+            
+            <hr style="border-color: #333; margin: 25px 0;">
+
+            <h3 style="margin-top:0; color: #3498db;">Entrar em uma Lista</h3>
+            <input type="text" id="codigo-convite" placeholder="Código de Convite (Ex: A1B2C3)" style="text-transform: uppercase;">
+            <button id="btn-entrar-lista" class="btn-acao" style="background: #3498db; color: white;">Entrar na Lista</button>
+        </div>
+
+        <h3 style="margin-bottom: 15px;">Minhas Listas</h3>
+        <div id="container-listas">
+            <p style="text-align: center; color: var(--text-secondary);">Carregando listas...</p>
+        </div>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

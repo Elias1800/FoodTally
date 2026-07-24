@@ -1,0 +1,181 @@
+:root {
+    --bg-body: #121212;
+    --bg-card: #1e1e1e;
+    --bg-input: #2a2a2a;
+    --text-main: #ffffff;
+    --text-muted: #aaaaaa;
+    --accent: #4CAF50;
+    --accent-blue: #2196F3;
+    --danger: #e74c3c;
+    --border: #333333;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* ================================
+   CABEÇALHO
+================================ */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+
+header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+#btn-sair {
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ================================
+   CONTAINER
+================================ */
+.container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ================================
+   PAINEL DE AÇÕES
+================================ */
+.painel-acoes {
+    background-color: var(--bg-card);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.painel-acoes h3 {
+    margin-top: 0;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.painel-acoes input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.painel-acoes input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.btn-acao {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+/* Força a cor verde no botão de criar */
+#btn-criar-lista {
+    background-color: #4CAF50 !important;
+    color: #000 !important;
+}
+
+/* Força a cor azul no botão de entrar */
+#btn-entrar-lista {
+    background-color: #2196F3 !important;
+    color: #fff !important;
+}
+hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 25px 0;
+}
+
+/* ================================
+   SESSÃO: MINHAS LISTAS
+================================ */
+.titulo-sessao {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: var(--accent);
+}
+
+#container-listas p {
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 30px;
+    font-size: 1.1rem;
+}
+
+.card-lista {
+    background-color: var(--bg-card);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.card-lista:hover {
+    border-color: var(--accent);
+    background-color: #242424;
+}
+
+.card-lista-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.card-lista-info h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--text-main);
+}
+
+.card-lista-info small {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.codigo-destaque {
+    color: var(--accent);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.seta {
+    font-size: 1.5rem;
+    color: var(--accent);
+}

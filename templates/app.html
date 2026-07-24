@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FoodTally - Feira</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- CABEÇALHO COM O TOTAL -->
+    <header>
+        <div class="header-topo">
+            <button onclick="window.location.href='/dashboard'" class="btn-voltar"> Voltar</button>
+            <h1 id="titulo-lista">Carregando...</h1>
+            <div style="width: 75px;"></div> <!-- Espaçador para centralizar o título -->
+        </div>
+        <div class="header-total">
+            <span>Total da Compra</span>
+            <h2 id="total-geral">R$ 0.00</h2>
+        </div>
+    </header>
+
+    <!-- LISTA DE ITENS (Com espaço extra no fundo para não ficar atrás do formulário) -->
+    <main>
+        <ul id="lista-itens"></ul>
+    </main>
+
+    <!-- FORMULÁRIO FIXO NO RODAPÉ -->
+    <div class="container-inferior">
+        <button id="btn-toggle-form" onclick="window.toggleFormulario()">Esconder Formulário</button>
+        
+        <div id="formulario">
+            <input type="text" id="nome-item" placeholder="Nome do item (ex: Arroz)" autocomplete="off">
+            <select id="categoria-item">
+                <option value="🛒 Mercearia" selected>Mercearia</option>
+                <option value="🥩 Açougue">Açougue</option>
+                <option value="🥦 Hortifrúti">Hortifrúti</option>
+                <option value="🥛 Laticínios">Laticínios</option>
+                <option value="🧴 Limpeza">Limpeza</option>
+                <option value="🍫 Doces">Doces</option>
+                <option value="📦 Outros">Outros</option>
+            </select>
+            <div class="linha-inputs">
+                <select id="tipo-unidade">
+                    <option value="un">un</option>
+                    <option value="kg">kg</option>
+                    <option value="estimar_un">estimar peso (un)</option>
+                </select>
+                <input type="number" id="qtd-item" placeholder="Quantidade" step="0.01">
+                <input type="number" id="valor-item" placeholder="R$ Valor" step="0.01">
+            </div>
+            <button id="btn-salvar" onclick="window.salvarItem()">Adicionar à Lista</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DO FIREBASE -->
+    <script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
