@@ -6,7 +6,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let usuarioAtual = null;
 
-// Verifica a sessão ativa no Supabase
 async function verificarSessao() {
     const { data: { session }, error } = await supabase.auth.getSession();
     
@@ -18,15 +17,14 @@ async function verificarSessao() {
     usuarioAtual = session.user;
     carregarListas();
 
-    // Atualiza as listas automaticamente a cada 4 segundos em segundo plano
+    // Polling colaborativo a cada 4 segundos
     setInterval(() => {
-        carregarListas(true); // 'true' para carregar silenciosamente sem reescrever o "Carregando..."
+        carregarListas(true);
     }, 4000);
 }
 
 verificarSessao();
 
-// Botão de Sair (Logout)
 document.getElementById('btn-sair').addEventListener('click', async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
@@ -36,7 +34,6 @@ function gerarCodigo() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// CREATE: Criar nova lista
 document.getElementById('btn-criar-lista').addEventListener('click', async () => {
     const nome = document.getElementById('nome-nova-lista').value.trim();
     if (!nome) return alert("Digite um nome para a lista!");
@@ -56,11 +53,10 @@ document.getElementById('btn-criar-lista').addEventListener('click', async () =>
         alert("Erro ao criar lista.");
     } else {
         document.getElementById('nome-nova-lista').value = "";
-        carregarListas(); 
+        await carregarListas(); // Garante a execução síncrona/imediata
     }
 });
 
-// UPDATE: Entrar em uma lista existente via código de convite
 document.getElementById('btn-entrar-lista').addEventListener('click', async () => {
     const codigo = document.getElementById('codigo-convite').value.trim().toUpperCase();
     if (!codigo) return alert("Digite um código!");
@@ -91,12 +87,12 @@ document.getElementById('btn-entrar-lista').addEventListener('click', async () =
     if (!updateError) {
         document.getElementById('codigo-convite').value = "";
         alert("Você entrou na lista com sucesso!");
-        carregarListas(); 
+        await carregarListas();
     }
 });
 
-// READ: Carregar as listas do usuário
 async function carregarListas(silencioso = false) {
+    if (!usuarioAtual) return;
     const container = document.getElementById('container-listas');
     
     if (!silencioso) {

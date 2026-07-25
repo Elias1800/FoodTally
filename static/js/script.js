@@ -26,9 +26,9 @@ async function verificarSessaoInterna() {
     }
 
     usuarioAtual = session.user;
-    carregarListaDoSupabase();
+    await carregarListaDoSupabase();
 
-    // Atualiza os itens da feira automaticamente a cada 3 segundos para ver o que o outro usuário mexeu
+    // Polling colaborativo a cada 3 segundos
     setInterval(() => {
         carregarListaDoSupabase(true);
     }, 3000);
@@ -49,20 +49,21 @@ window.toggleFormulario = function() {
     }
 }
 
-// READ: Carregar itens da lista atual
-async function carregarListaDoSupabase(silencioso = false) {
+async function carregarListaDoSupabase() {
     const { data: itens, error } = await supabase
         .from('itens')
         .select('*')
         .eq('lista_id', listaIdAtual);
 
-    if (error) return;
+    if (error) {
+        console.error("Erro ao carregar itens:", error);
+        return;
+    }
 
     itensDaFeira = itens || [];
     renderizarLista();
 }
 
-// CREATE & UPDATE: Salvar item
 window.salvarItem = async function() {
     if (!usuarioAtual) return; 
 
@@ -112,7 +113,7 @@ window.salvarItem = async function() {
         document.getElementById('formulario').style.display = 'flex';
         document.getElementById('btn-toggle-form').innerText = 'Esconder Formulário';
         
-        carregarListaDoSupabase(); 
+        await carregarListaDoSupabase(); // Atualiza de imediato
     } catch (erro) {
         console.error("Erro ao salvar:", erro);
     }
@@ -139,11 +140,10 @@ window.editarItem = function(id) {
     document.getElementById('valor-item').focus();
 }
 
-// DELETE: Deletar item do banco
 window.deletarItem = async function(id) {
     try {
         await supabase.from('itens').delete().eq('id', id);
-        carregarListaDoSupabase(); 
+        await carregarListaDoSupabase(); // Atualiza de imediato
     } catch (erro) {
         console.error("Erro ao deletar:", erro);
     }
