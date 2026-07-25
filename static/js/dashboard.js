@@ -17,7 +17,6 @@ async function verificarSessao() {
     usuarioAtual = session.user;
     carregarListas();
 
-    // Polling colaborativo a cada 4 segundos
     setInterval(() => {
         carregarListas(true);
     }, 4000);
@@ -53,7 +52,7 @@ document.getElementById('btn-criar-lista').addEventListener('click', async () =>
         alert("Erro ao criar lista.");
     } else {
         document.getElementById('nome-nova-lista').value = "";
-        await carregarListas(); // Garante a execução síncrona/imediata
+        await carregarListas();
     }
 });
 
@@ -91,6 +90,30 @@ document.getElementById('btn-entrar-lista').addEventListener('click', async () =
     }
 });
 
+// Função para apagar a lista inteira (e os itens dela)
+window.deletarLista = async function(event, listaId) {
+    event.stopPropagation(); // Evita que clique no card e abra a lista ao invés de apagar
+
+    if (!confirm("Tem certeza que deseja apagar esta lista inteira?")) return;
+
+    try {
+        // 1. Apaga primeiro todos os itens de dentro da lista
+        await supabase.from('itens').delete().eq('lista_id', listaId);
+
+        // 2. Apaga a lista em si
+        const { error } = await supabase.from('listas').delete().eq('id', listaId);
+
+        if (error) {
+            alert("Erro ao apagar a lista.");
+            console.error(error);
+        } else {
+            await carregarListas();
+        }
+    } catch (err) {
+        console.error("Erro ao deletar lista:", err);
+    }
+};
+
 async function carregarListas(silencioso = false) {
     if (!usuarioAtual) return;
     const container = document.getElementById('container-listas');
@@ -115,14 +138,20 @@ async function carregarListas(silencioso = false) {
     listas.forEach((lista) => {
         const div = document.createElement('div');
         div.className = 'card-lista';
-        div.onclick = () => window.location.href = `/app?id=${lista.id}&nome=${encodeURIComponent(lista.nome)}`;
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
         
+        // Clicar no corpo do card abre a lista
         div.innerHTML = `
-            <div>
+            <div style="flex-grow: 1; cursor: pointer;" onclick="window.location.href = '/app?id=${lista.id}&nome=${encodeURIComponent(lista.nome)}'">
                 <h4 style="margin: 0; color: #fff; font-size: 1.2rem;">${lista.nome}</h4>
                 <small style="color: #888;">Código Convite: <b style="color: #4CAF50;">${lista.codigo_compartilhamento}</b></small>
             </div>
-            <span style="font-size: 1.5rem;">➔</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button onclick="window.deletarLista(event, '${lista.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 1.2rem;" title="Apagar Lista">🗑️</button>
+                <span style="font-size: 1.5rem; color: #888; cursor: pointer;" onclick="window.location.href = '/app?id=${lista.id}&nome=${encodeURIComponent(lista.nome)}'">➔</span>
+            </div>
         `;
         container.appendChild(div);
     });
