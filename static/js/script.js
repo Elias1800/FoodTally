@@ -44,19 +44,33 @@ window.toggleFormulario = function() {
     }
 }
 
-async function carregarListaDoSupabase() {
-    const { data: itens, error } = await supabase
-        .from('itens')
-        .select('*')
-        .eq('lista_id', listaIdAtual);
+function carregarListaDoSupabase() {
+    async function buscarItens() {
+        const { data: itens, error } = await supabase
+            .from('itens')
+            .select('*')
+            .eq('lista_id', listaIdAtual);
 
-    if (error) {
-        console.error("Erro ao carregar itens:", error);
-        return;
+        if (error) {
+            console.error("Erro ao carregar itens:", error);
+            return;
+        }
+
+        itensDaFeira = itens || [];
+        renderizarLista();
     }
 
-    itensDaFeira = itens || [];
-    renderizarLista();
+    buscarItens();
+
+    // Escuta em tempo real para atualizar os itens automaticamente
+    supabase
+        .channel('public:itens')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'itens' }, (payload) => {
+            if (payload.new?.lista_id === listaIdAtual || payload.old?.lista_id === listaIdAtual) {
+                buscarItens();
+            }
+        })
+        .subscribe();
 }
 
 window.salvarItem = async function() {
@@ -107,7 +121,6 @@ window.salvarItem = async function() {
         limparFormulario();
         document.getElementById('formulario').style.display = 'flex';
         document.getElementById('btn-toggle-form').innerText = 'Esconder Formulário';
-        carregarListaDoSupabase();
     } catch (erro) {
         console.error("Erro ao salvar:", erro);
     }
@@ -137,7 +150,6 @@ window.editarItem = function(id) {
 window.deletarItem = async function(id) {
     try {
         await supabase.from('itens').delete().eq('id', id);
-        carregarListaDoSupabase();
     } catch (erro) {
         console.error("Erro ao deletar:", erro);
     }

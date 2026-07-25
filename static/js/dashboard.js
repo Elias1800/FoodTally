@@ -50,7 +50,6 @@ document.getElementById('btn-criar-lista').addEventListener('click', async () =>
         alert("Erro ao criar lista.");
     } else {
         document.getElementById('nome-nova-lista').value = "";
-        carregarListas();
     }
 });
 
@@ -84,37 +83,48 @@ document.getElementById('btn-entrar-lista').addEventListener('click', async () =
     if (!updateError) {
         document.getElementById('codigo-convite').value = "";
         alert("Você entrou na lista com sucesso!");
-        carregarListas();
     }
 });
 
-async function carregarListas() {
+function carregarListas() {
     const container = document.getElementById('container-listas');
     container.innerHTML = "<p style='text-align:center; color:#888;'>Carregando...</p>";
 
-    const { data: listas, error } = await supabase
-        .from('listas')
-        .select('*')
-        .contains('participantes', [usuarioAtual.id]);
+    async function buscarListas() {
+        const { data: listas, error } = await supabase
+            .from('listas')
+            .select('*')
+            .contains('participantes', [usuarioAtual.id]);
 
-    container.innerHTML = "";
-    if (error || !listas || listas.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#888;'>Você ainda não tem listas.</p>";
-        return;
+        container.innerHTML = "";
+        if (error || !listas || listas.length === 0) {
+            container.innerHTML = "<p style='text-align:center; color:#888;'>Você ainda não tem listas.</p>";
+            return;
+        }
+
+        listas.forEach((lista) => {
+            const div = document.createElement('div');
+            div.className = 'card-lista';
+            div.onclick = () => window.location.href = `/app?id=${lista.id}&nome=${encodeURIComponent(lista.nome)}`;
+            
+            div.innerHTML = `
+                <div>
+                    <h4 style="margin: 0; color: #fff; font-size: 1.2rem;">${lista.nome}</h4>
+                    <small style="color: #888;">Código Convite: <b style="color: #4CAF50;">${lista.codigo_compartilhamento}</b></small>
+                </div>
+                <span style="font-size: 1.5rem;">➔</span>
+            `;
+            container.appendChild(div);
+        });
     }
 
-    listas.forEach((lista) => {
-        const div = document.createElement('div');
-        div.className = 'card-lista';
-        div.onclick = () => window.location.href = `/app?id=${lista.id}&nome=${encodeURIComponent(lista.nome)}`;
-        
-        div.innerHTML = `
-            <div>
-                <h4 style="margin: 0; color: #fff; font-size: 1.2rem;">${lista.nome}</h4>
-                <small style="color: #888;">Código Convite: <b style="color: #4CAF50;">${lista.codigo_compartilhamento}</b></small>
-            </div>
-            <span style="font-size: 1.5rem;">➔</span>
-        `;
-        container.appendChild(div);
-    });
+    buscarListas();
+
+    // Escuta em tempo real para atualizar o dashboard automaticamente
+    supabase
+        .channel('public:listas')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'listas' }, () => {
+            buscarListas();
+        })
+        .subscribe();
 }
