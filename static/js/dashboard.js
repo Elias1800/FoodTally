@@ -31,6 +31,7 @@ function gerarCodigo() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+// CREATE: Criar nova lista
 document.getElementById('btn-criar-lista').addEventListener('click', async () => {
     const nome = document.getElementById('nome-nova-lista').value.trim();
     if (!nome) return alert("Digite um nome para a lista!");
@@ -50,10 +51,11 @@ document.getElementById('btn-criar-lista').addEventListener('click', async () =>
         alert("Erro ao criar lista.");
     } else {
         document.getElementById('nome-nova-lista').value = "";
-        carregarListas(); // Atualiza a tela imediatamente após criar
+        carregarListas(); // Atualiza a tela na hora após criar
     }
 });
 
+// UPDATE: Entrar em uma lista existente via código de convite
 document.getElementById('btn-entrar-lista').addEventListener('click', async () => {
     const codigo = document.getElementById('codigo-convite').value.trim().toUpperCase();
     if (!codigo) return alert("Digite um código!");
@@ -84,10 +86,11 @@ document.getElementById('btn-entrar-lista').addEventListener('click', async () =
     if (!updateError) {
         document.getElementById('codigo-convite').value = "";
         alert("Você entrou na lista com sucesso!");
-        carregarListas(); // Atualiza a tela imediatamente após entrar na lista
+        carregarListas(); // Atualiza a tela na hora após entrar
     }
 });
 
+// READ: Carregar as listas do usuário
 async function carregarListas() {
     const container = document.getElementById('container-listas');
     container.innerHTML = "<p style='text-align:center; color:#888;'>Carregando...</p>";

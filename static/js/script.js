@@ -44,6 +44,7 @@ window.toggleFormulario = function() {
     }
 }
 
+// READ: Carregar itens da lista atual
 async function carregarListaDoSupabase() {
     const { data: itens, error } = await supabase
         .from('itens')
@@ -59,6 +60,7 @@ async function carregarListaDoSupabase() {
     renderizarLista();
 }
 
+// CREATE & UPDATE: Salvar item (cria novo se não estiver editando, ou atualiza se estiver em modo edição)
 window.salvarItem = async function() {
     if (!usuarioAtual) return; 
 
@@ -100,15 +102,17 @@ window.salvarItem = async function() {
 
     try {
         if (idEditando) {
+            // UPDATE no banco
             await supabase.from('itens').update(dadosItem).eq('id', idEditando);
         } else {
+            // CREATE no banco
             await supabase.from('itens').insert([dadosItem]);
         }
         limparFormulario();
         document.getElementById('formulario').style.display = 'flex';
         document.getElementById('btn-toggle-form').innerText = 'Esconder Formulário';
         
-        carregarListaDoSupabase(); // Atualiza a tela imediatamente após salvar/editar
+        carregarListaDoSupabase(); // Atualiza a tela instantaneamente após criar ou atualizar
     } catch (erro) {
         console.error("Erro ao salvar:", erro);
     }
@@ -135,10 +139,11 @@ window.editarItem = function(id) {
     document.getElementById('valor-item').focus();
 }
 
+// DELETE: Deletar item do banco
 window.deletarItem = async function(id) {
     try {
         await supabase.from('itens').delete().eq('id', id);
-        carregarListaDoSupabase(); // Atualiza a tela imediatamente após deletar
+        carregarListaDoSupabase(); // Atualiza a tela instantaneamente após deletar
     } catch (erro) {
         console.error("Erro ao deletar:", erro);
     }
