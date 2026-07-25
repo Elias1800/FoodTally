@@ -27,6 +27,11 @@ async function verificarSessaoInterna() {
 
     usuarioAtual = session.user;
     carregarListaDoSupabase();
+
+    // Atualiza os itens da feira automaticamente a cada 3 segundos para ver o que o outro usuário mexeu
+    setInterval(() => {
+        carregarListaDoSupabase(true);
+    }, 3000);
 }
 
 verificarSessaoInterna();
@@ -45,22 +50,19 @@ window.toggleFormulario = function() {
 }
 
 // READ: Carregar itens da lista atual
-async function carregarListaDoSupabase() {
+async function carregarListaDoSupabase(silencioso = false) {
     const { data: itens, error } = await supabase
         .from('itens')
         .select('*')
         .eq('lista_id', listaIdAtual);
 
-    if (error) {
-        console.error("Erro ao carregar itens:", error);
-        return;
-    }
+    if (error) return;
 
     itensDaFeira = itens || [];
     renderizarLista();
 }
 
-// CREATE & UPDATE: Salvar item (cria novo se não estiver editando, ou atualiza se estiver em modo edição)
+// CREATE & UPDATE: Salvar item
 window.salvarItem = async function() {
     if (!usuarioAtual) return; 
 
@@ -102,17 +104,15 @@ window.salvarItem = async function() {
 
     try {
         if (idEditando) {
-            // UPDATE no banco
             await supabase.from('itens').update(dadosItem).eq('id', idEditando);
         } else {
-            // CREATE no banco
             await supabase.from('itens').insert([dadosItem]);
         }
         limparFormulario();
         document.getElementById('formulario').style.display = 'flex';
         document.getElementById('btn-toggle-form').innerText = 'Esconder Formulário';
         
-        carregarListaDoSupabase(); // Atualiza a tela instantaneamente após criar ou atualizar
+        carregarListaDoSupabase(); 
     } catch (erro) {
         console.error("Erro ao salvar:", erro);
     }
@@ -143,7 +143,7 @@ window.editarItem = function(id) {
 window.deletarItem = async function(id) {
     try {
         await supabase.from('itens').delete().eq('id', id);
-        carregarListaDoSupabase(); // Atualiza a tela instantaneamente após deletar
+        carregarListaDoSupabase(); 
     } catch (erro) {
         console.error("Erro ao deletar:", erro);
     }

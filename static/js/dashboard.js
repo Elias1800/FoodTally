@@ -17,6 +17,11 @@ async function verificarSessao() {
 
     usuarioAtual = session.user;
     carregarListas();
+
+    // Atualiza as listas automaticamente a cada 4 segundos em segundo plano
+    setInterval(() => {
+        carregarListas(true); // 'true' para carregar silenciosamente sem reescrever o "Carregando..."
+    }, 4000);
 }
 
 verificarSessao();
@@ -51,7 +56,7 @@ document.getElementById('btn-criar-lista').addEventListener('click', async () =>
         alert("Erro ao criar lista.");
     } else {
         document.getElementById('nome-nova-lista').value = "";
-        carregarListas(); // Atualiza a tela na hora após criar
+        carregarListas(); 
     }
 });
 
@@ -86,22 +91,27 @@ document.getElementById('btn-entrar-lista').addEventListener('click', async () =
     if (!updateError) {
         document.getElementById('codigo-convite').value = "";
         alert("Você entrou na lista com sucesso!");
-        carregarListas(); // Atualiza a tela na hora após entrar
+        carregarListas(); 
     }
 });
 
 // READ: Carregar as listas do usuário
-async function carregarListas() {
+async function carregarListas(silencioso = false) {
     const container = document.getElementById('container-listas');
-    container.innerHTML = "<p style='text-align:center; color:#888;'>Carregando...</p>";
+    
+    if (!silencioso) {
+        container.innerHTML = "<p style='text-align:center; color:#888;'>Carregando...</p>";
+    }
 
     const { data: listas, error } = await supabase
         .from('listas')
         .select('*')
         .contains('participantes', [usuarioAtual.id]);
 
+    if (error) return;
+
     container.innerHTML = "";
-    if (error || !listas || listas.length === 0) {
+    if (!listas || listas.length === 0) {
         container.innerHTML = "<p style='text-align:center; color:#888;'>Você ainda não tem listas.</p>";
         return;
     }
