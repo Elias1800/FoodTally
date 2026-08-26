@@ -18,10 +18,10 @@
 
 # Tabela de Conteúdos
 
-- [• Principais Funcionalidades](#-principais-funcionalidades)
-- [• Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [• Configuração e Instalação Local](#-configuração-e-instalação-local)
-- [• Licença](#-licença)
+- [• Principais Funcionalidades](#principais-funcionalidades)
+- [• Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [• Configuração e Instalação Local](#configuração-e-instalação-local)
+- [• Licença](#licença)
 
 ---
 
