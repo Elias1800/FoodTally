@@ -6,7 +6,7 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-Frontend-yellow)
 ![Status](https://img.shields.io/badge/status-Em%20Desenvolvimento-orange)
 [![Licença MIT](https://img.shields.io/badge/licença-MIT-yellow)](LICENSE)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Perfil-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/elias-barbosa-367280282/)
+[![Linkedin](https://img.shields.io/badge/LinkedIn-Perfil-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/elias-barbosa-367280282/)
 
 > **FoodTally** é um aplicativo web responsivo (**Mobile-First**) projetado para ser o seu assistente financeiro no supermercado.
 >
