@@ -27,13 +27,13 @@
 
 # Principais Funcionalidades
 
-- • **Cálculo em Tempo Real** — Saiba exatamente quanto vai pagar antes de chegar ao caixa.
-- • **Estimativa Inteligente de Peso** — Adicione itens por unidade (ex.: "3 tomates") e o aplicativo calcula automaticamente a estimativa de peso em quilogramas e o valor final utilizando uma base de pesos médios.
-- • **Categorização Automática** — Os produtos são agrupados por corredores como Mercearia, Hortifrúti, Açougue, Limpeza, Bebidas, entre outros.
-- • **Colaboração em Tempo Real** — Compartilhe listas através de um código de convite e acompanhe as alterações instantaneamente utilizando sincronização por *polling*.
-- • **Design Mobile-First (Dark Mode)** — Interface otimizada para smartphones seguindo o conceito **Thumb Zone**, permitindo uso confortável com apenas uma mão.
-- • **Modo Planejamento / Pendente** — Crie sua lista antes de sair de casa e deixe os itens aguardando atualização de preços no supermercado.
-- • **Gestão de Contas e Listas** — Login seguro via Google OAuth com gerenciamento completo das listas.
+-  **Cálculo em Tempo Real** — Saiba exatamente quanto vai pagar antes de chegar ao caixa.
+-  **Estimativa Inteligente de Peso** — Adicione itens por unidade (ex.: "3 tomates") e o aplicativo calcula automaticamente a estimativa de peso em quilogramas e o valor final utilizando uma base de pesos médios.
+-  **Categorização Automática** — Os produtos são agrupados por corredores como Mercearia, Hortifrúti, Açougue, Limpeza, Bebidas, entre outros.
+-  **Colaboração em Tempo Real** — Compartilhe listas através de um código de convite e acompanhe as alterações instantaneamente utilizando sincronização por *polling*.
+-  **Design Mobile-First (Dark Mode)** — Interface otimizada para smartphones seguindo o conceito **Thumb Zone**, permitindo uso confortável com apenas uma mão.
+-  **Modo Planejamento / Pendente** — Crie sua lista antes de sair de casa e deixe os itens aguardando atualização de preços no supermercado.
+-  **Gestão de Contas e Listas** — Login seguro via Google OAuth com gerenciamento completo das listas.
 
 ---
 
